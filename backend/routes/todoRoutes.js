@@ -1,36 +1,57 @@
 import express from "express";
+import mongoose from "mongoose";
+
 const router = express.Router();
 
-let todos = []; // In-memory storage
+// ✅ Define Schema
+const todoSchema = new mongoose.Schema(
+  {
+    text: { type: String, required: true },
+    completed: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
 
-// GET all todos
-router.get("/", (req, res) => {
-  res.json(todos);
+// ✅ Create Model
+const Todo = mongoose.model("Todo", todoSchema);
+
+// ✅ GET all todos
+router.get("/", async (req, res) => {
+  try {
+    const todos = await Todo.find().sort({ createdAt: -1 });
+    res.json(todos);
+  } catch (err) {
+    console.error("GET / error:", err);
+    res.status(500).json({ message: "Server error fetching todos" });
+  }
 });
 
-// POST new todo
-router.post("/", (req, res) => {
-  const { task } = req.body;
-  if (!task) return res.status(400).json({ message: "Task is required" });
+// ✅ POST create new todo
+router.post("/", async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || text.trim() === "")
+      return res.status(400).json({ message: "Text is required" });
 
-  const newTodo = { id: Date.now(), task, completed: false };
-  todos.push(newTodo);
-  res.status(201).json(newTodo);
+    const newTodo = new Todo({ text });
+    const saved = await newTodo.save();
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error("POST / error:", err);
+    res.status(500).json({ message: "Server error adding todo" });
+  }
 });
 
-// PUT toggle todo completed
-router.put("/:id", (req, res) => {
-  const todo = todos.find(t => t.id === Number(req.params.id));
-  if (!todo) return res.status(404).json({ message: "Todo not found" });
-
-  todo.completed = !todo.completed;
-  res.json(todo);
-});
-
-// DELETE a todo
-router.delete("/:id", (req, res) => {
-  todos = todos.filter(t => t.id !== Number(req.params.id));
-  res.json({ message: "Todo deleted" });
+// ✅ DELETE todo
+router.delete("/:id", async (req, res) => {
+  try {
+    const todo = await Todo.findByIdAndDelete(req.params.id);
+    if (!todo) return res.status(404).json({ message: "Todo not found" });
+    res.json({ message: "Todo deleted successfully" });
+  } catch (err) {
+    console.error("DELETE / error:", err);
+    res.status(500).json({ message: "Server error deleting todo" });
+  }
 });
 
 export default router;
