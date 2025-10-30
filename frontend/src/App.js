@@ -5,7 +5,6 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
-  // ✅ Fetch all tasks
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/todos")
@@ -13,7 +12,6 @@ function App() {
       .catch((err) => console.error("Error fetching tasks:", err));
   }, []);
 
-  // ✅ Add a new task
   const addTask = async () => {
     if (!newTask.trim()) return;
     try {
@@ -27,7 +25,6 @@ function App() {
     }
   };
 
-  // ✅ Delete a task
   const deleteTask = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/todos/${id}`);
@@ -38,36 +35,36 @@ function App() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>📝 Neha’s To-Do List</h1>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <h1 style={styles.title}>Neha’s To-Do List</h1>
 
-        <div style={styles.inputBox}>
+        <div style={styles.inputRow}>
           <input
             type="text"
-            placeholder="Type something and press Add..."
+            placeholder="Add a new task..."
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addTask()}
             style={styles.input}
           />
           <button style={styles.addBtn} onClick={addTask}>
-            Add ➕
+            Add
           </button>
         </div>
 
-        <div style={styles.listBox}>
+        <div style={styles.taskList}>
           {tasks.length === 0 ? (
-            <p style={styles.noTask}>No tasks yet 😴</p>
+            <p style={styles.emptyText}>No tasks yet</p>
           ) : (
             tasks.map((task) => (
-              <div key={task._id} style={styles.task}>
+              <div key={task._id} style={styles.taskItem}>
                 <span style={styles.taskText}>{task.text}</span>
                 <button
                   style={styles.deleteBtn}
                   onClick={() => deleteTask(task._id)}
                 >
-                  🗑
+                  ✕
                 </button>
               </div>
             ))
@@ -78,89 +75,87 @@ function App() {
   );
 }
 
-// 💅 Modern Styling
 const styles = {
-  container: {
+  page: {
     minHeight: "100vh",
+    background: "#f0f2f5",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "linear-gradient(135deg, #89f7fe, #66a6ff)",
-    fontFamily: "Poppins, sans-serif",
+    fontFamily: "Segoe UI, sans-serif",
   },
-  card: {
-    background: "rgba(255, 255, 255, 0.2)",
-    backdropFilter: "blur(15px)",
-    padding: "40px 30px",
-    borderRadius: "20px",
-    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)",
-    width: "90%",
-    maxWidth: "450px",
-    transition: "all 0.3s ease",
+  container: {
+    width: "100%",
+    maxWidth: "420px",
+    backgroundColor: "#fff",
+    borderRadius: "10px",
+    padding: "25px 20px 30px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
   },
   title: {
     textAlign: "center",
-    color: "#fff",
-    fontSize: "2rem",
-    marginBottom: "20px",
-    letterSpacing: "1px",
-  },
-  inputBox: {
-    display: "flex",
-    gap: "10px",
     marginBottom: "25px",
+    color: "#333",
+    fontSize: "1.8rem",
+    fontWeight: "600",
+  },
+  inputRow: {
+    display: "flex",
+    marginBottom: "20px",
+    gap: "10px",
   },
   input: {
     flex: 1,
-    padding: "12px 15px",
-    borderRadius: "12px",
-    border: "none",
+    padding: "10px 12px",
     fontSize: "1rem",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
     outline: "none",
-    boxShadow: "0 3px 8px rgba(0,0,0,0.1)",
   },
   addBtn: {
-    padding: "12px 18px",
-    borderRadius: "12px",
-    background: "#007bff",
+    backgroundColor: "#007bff",
     color: "#fff",
     border: "none",
-    fontWeight: "bold",
+    borderRadius: "6px",
+    padding: "10px 18px",
+    fontSize: "1rem",
     cursor: "pointer",
-    transition: "all 0.3s ease",
+    transition: "0.2s",
   },
-  listBox: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
+  addBtnHover: {
+    backgroundColor: "#0056b3",
   },
-  task: {
-    backgroundColor: "rgba(255,255,255,0.9)",
-    padding: "12px 18px",
-    borderRadius: "12px",
+  taskList: {
+    marginTop: "10px",
+  },
+  taskItem: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: "6px",
+    padding: "10px 12px",
+    marginBottom: "10px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    transition: "0.3s",
+    border: "1px solid #e0e0e0",
   },
   taskText: {
-    fontSize: "1rem",
     color: "#333",
+    fontSize: "1rem",
   },
   deleteBtn: {
-    background: "#ff4d4d",
-    border: "none",
+    backgroundColor: "#dc3545",
     color: "white",
-    borderRadius: "8px",
-    width: "35px",
-    height: "35px",
-    fontSize: "1.1rem",
+    border: "none",
+    borderRadius: "4px",
+    width: "28px",
+    height: "28px",
+    fontSize: "0.9rem",
     cursor: "pointer",
   },
-  noTask: {
+  emptyText: {
+    color: "#777",
     textAlign: "center",
-    color: "#fff",
-    fontSize: "1.1rem",
+    marginTop: "20px",
   },
 };
 
