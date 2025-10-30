@@ -1,27 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
-  // ✅ Fetch all tasks
+  // ✅ Backend URL (make sure backend is on port 5000)
+  const API_URL = "http://localhost:5000/api/todos";
+
+  // Fetch tasks on page load
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/todos")
-      .then((res) => setTasks(res.data))
-      .catch((err) => console.error("Error fetching tasks:", err));
+    fetchTasks();
   }, []);
 
-  // ✅ Add new task
-  const addTask = async () => {
-    if (!newTask.trim()) return;
+  const fetchTasks = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/todos", {
-        text: newTask,
-      });
-      setTasks([...tasks, res.data]);
-      setNewTask("");
+      const res = await axios.get(API_URL);
+      setTasks(res.data);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+    }
+  };
+
+  // ✅ Add task (on button click or Enter)
+  const addTask = async () => {
+    if (!newTask.trim()) return; // prevent empty input
+    try {
+      const res = await axios.post(API_URL, { text: newTask });
+      setTasks([...tasks, res.data]); // add new task to list
+      setNewTask(""); // clear input
     } catch (err) {
       console.error("Error adding task:", err);
     }
@@ -30,118 +37,93 @@ function App() {
   // ✅ Delete task
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/todos/${id}`);
+      await axios.delete(`${API_URL}/${id}`);
       setTasks(tasks.filter((task) => task._id !== id));
     } catch (err) {
       console.error("Error deleting task:", err);
     }
   };
 
-  return (
-    <div style={styles.wrapper}>
-      <h1 style={styles.heading}>📝 Neha’s To-Do List</h1>
+  // ✅ Handle Enter key press
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") addTask();
+  };
 
-      <div style={styles.inputBox}>
+  return (
+    <div style={styles.container}>
+      <h1 style={styles.title}>📝 To-Do List</h1>
+
+      <div style={styles.inputContainer}>
         <input
           type="text"
-          placeholder="✍️ Add a task..."
-          style={styles.input}
+          placeholder="Add a new task..."
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addTask()}
+          onKeyDown={handleKeyPress}
+          style={styles.input}
         />
-        <button style={styles.addBtn} onClick={addTask}>
-          Add
+        <button onClick={addTask} style={styles.button}>
+          ➕ Add
         </button>
       </div>
 
-      <div style={styles.listBox}>
-        {tasks.length === 0 ? (
-          <p style={styles.noTask}>No tasks yet 😴</p>
-        ) : (
-          tasks.map((task) => (
-            <div key={task._id} style={styles.task}>
-              <span>{task.text}</span>
-              <button
-                style={styles.deleteBtn}
-                onClick={() => deleteTask(task._id)}
-              >
-                ✖
-              </button>
-            </div>
-          ))
-        )}
-      </div>
+      <ul style={styles.list}>
+        {tasks.map((task) => (
+          <li key={task._id} style={styles.listItem}>
+            {task.text}
+            <button onClick={() => deleteTask(task._id)} style={styles.delete}>
+              ❌
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
+// Simple inline styles for UI
 const styles = {
-  wrapper: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #89f7fe, #66a6ff)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "Poppins, sans-serif",
-    padding: "20px",
+  container: {
+    width: "400px",
+    margin: "50px auto",
+    textAlign: "center",
+    background: "#f4f4f4",
+    padding: "30px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
   },
-  heading: {
-    color: "#fff",
-    fontSize: "2rem",
-    marginBottom: "20px",
-  },
-  inputBox: {
-    display: "flex",
-    gap: "10px",
-    width: "100%",
-    maxWidth: "400px",
-    marginBottom: "30px",
-  },
+  title: { marginBottom: "20px", color: "#333" },
+  inputContainer: { display: "flex", justifyContent: "center", marginBottom: "20px" },
   input: {
-    flex: 1,
+    width: "70%",
     padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    outline: "none",
-    fontSize: "1rem",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    marginRight: "10px",
   },
-  addBtn: {
+  button: {
     padding: "10px 20px",
     backgroundColor: "#007bff",
     color: "white",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "5px",
     cursor: "pointer",
-    fontWeight: "bold",
   },
-  listBox: {
-    width: "100%",
-    maxWidth: "400px",
-  },
-  task: {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    padding: "10px 15px",
+  list: { listStyle: "none", padding: 0 },
+  listItem: {
+    background: "white",
+    padding: "10px",
     marginBottom: "10px",
+    borderRadius: "5px",
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
   },
-  deleteBtn: {
-    backgroundColor: "#ff4d4d",
+  delete: {
+    background: "red",
     color: "white",
     border: "none",
-    borderRadius: "50%",
-    width: "30px",
-    height: "30px",
+    borderRadius: "5px",
     cursor: "pointer",
-  },
-  noTask: {
-    color: "#fff",
-    fontSize: "1.2rem",
   },
 };
 
