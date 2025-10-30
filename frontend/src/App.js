@@ -13,7 +13,7 @@ function App() {
       .catch((err) => console.error("Error fetching tasks:", err));
   }, []);
 
-  // ✅ Add a new task
+  // ✅ Add new task
   const addTask = async () => {
     if (!newTask.trim()) return;
     try {
@@ -27,7 +27,7 @@ function App() {
     }
   };
 
-  // ✅ Delete a task
+  // ✅ Delete task
   const deleteTask = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/todos/${id}`);
@@ -39,13 +39,13 @@ function App() {
 
   return (
     <div style={styles.wrapper}>
-      <h1 style={styles.heading}>✨ Neha’s To-Do List ✨</h1>
+      <h1 style={styles.heading}>📝 Neha’s To-Do List</h1>
 
       <div style={styles.inputBox}>
         <input
           type="text"
+          placeholder="✍️ Add a task..."
           style={styles.input}
-          placeholder="✍️ Add a new task..."
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addTask()}
@@ -62,7 +62,10 @@ function App() {
           tasks.map((task) => (
             <div key={task._id} style={styles.task}>
               <span>{task.text}</span>
-              <button style={styles.deleteBtn} onClick={() => deleteTask(task._id)}>
+              <button
+                style={styles.deleteBtn}
+                onClick={() => deleteTask(task._id)}
+              >
                 ✖
               </button>
             </div>
@@ -73,7 +76,6 @@ function App() {
   );
 }
 
-// 🎨 Improved Modern UI
 const styles = {
   wrapper: {
     minHeight: "100vh",
@@ -87,7 +89,7 @@ const styles = {
   },
   heading: {
     color: "#fff",
-    fontSize: "2.2rem",
+    fontSize: "2rem",
     marginBottom: "20px",
   },
   inputBox: {
@@ -113,10 +115,6 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "bold",
-    transition: "0.3s",
-  },
-  addBtnHover: {
-    backgroundColor: "#0056b3",
   },
   listBox: {
     width: "100%",
