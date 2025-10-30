@@ -1,54 +1,27 @@
 import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
+import todoRoutes from "./routes/todoRoutes.js";
 
-const router = express.Router();
+dotenv.config();
+const app = express();
 
-// Define schema
-const todoSchema = new mongoose.Schema({
-  text: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-}, { timestamps: true });
+// ✅ Middleware
+app.use(cors({
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "DELETE", "PUT"],
+}));
+app.use(express.json());
 
-// Create model
-const Todo = mongoose.model("Todo", todoSchema);
+// ✅ Routes
+app.use("/api/todos", todoRoutes);
 
-// ✅ GET all todos
-router.get("/", async (req, res) => {
-  try {
-    const todos = await Todo.find().sort({ createdAt: -1 });
-    res.json(todos);
-  } catch (err) {
-    console.error("GET / error:", err);
-    res.status(500).json({ message: "Server error fetching todos" });
-  }
-});
+// ✅ MongoDB Connection
+mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/todoApp")
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-// ✅ POST create a new todo
-router.post("/", async (req, res) => {
-  try {
-    const { text } = req.body;
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ message: "Text is required" });
-    }
-    const newTodo = new Todo({ text });
-    const saved = await newTodo.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    console.error("POST / error:", err);
-    res.status(500).json({ message: "Server error adding todo" });
-  }
-});
-
-// ✅ DELETE a todo
-router.delete("/:id", async (req, res) => {
-  try {
-    const todo = await Todo.findByIdAndDelete(req.params.id);
-    if (!todo) return res.status(404).json({ message: "Todo not found" });
-    res.json({ message: "Todo deleted successfully" });
-  } catch (err) {
-    console.error("DELETE / error:", err);
-    res.status(500).json({ message: "Server error deleting todo" });
-  }
-});
-
-export default router;
+// ✅ Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
