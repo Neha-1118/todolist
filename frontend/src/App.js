@@ -5,111 +5,146 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
-  // Fetch tasks from backend
+  // ✅ Fetch all tasks
   useEffect(() => {
-    axios.get("http://localhost:5000/api/todos")
-      .then(res => setTasks(res.data))
-      .catch(err => console.error(err));
+    axios
+      .get("http://localhost:5000/api/todos")
+      .then((res) => setTasks(res.data))
+      .catch((err) => console.error("Error fetching tasks:", err));
   }, []);
 
-  // Add new task
-  const addTask = () => {
+  // ✅ Add a new task
+  const addTask = async () => {
     if (!newTask.trim()) return;
-    axios.post("http://localhost:5000/api/todos", { text: newTask })
-      .then(res => {
-        setTasks([...tasks, res.data]);
-        setNewTask("");
-      })
-      .catch(err => console.error(err));
+    try {
+      const res = await axios.post("http://localhost:5000/api/todos", {
+        text: newTask,
+      });
+      setTasks([...tasks, res.data]);
+      setNewTask("");
+    } catch (err) {
+      console.error("Error adding task:", err);
+    }
   };
 
-  // Delete task
-  const deleteTask = (id) => {
-    axios.delete(`http://localhost:5000/api/todos/${id}`)
-      .then(() => setTasks(tasks.filter(t => t._id !== id)))
-      .catch(err => console.error(err));
+  // ✅ Delete a task
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/todos/${id}`);
+      setTasks(tasks.filter((task) => task._id !== id));
+    } catch (err) {
+      console.error("Error deleting task:", err);
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>📝 Neha’s To-Do App</h1>
+    <div style={styles.wrapper}>
+      <h1 style={styles.heading}>✨ Neha’s To-Do List ✨</h1>
 
       <div style={styles.inputBox}>
         <input
-          style={styles.input}
           type="text"
-          placeholder="Add a new task..."
+          style={styles.input}
+          placeholder="✍️ Add a new task..."
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && addTask()}
         />
-        <button style={styles.addButton} onClick={addTask}>Add</button>
+        <button style={styles.addBtn} onClick={addTask}>
+          Add
+        </button>
       </div>
 
-      <ul style={styles.list}>
-        {tasks.map((task) => (
-          <li key={task._id} style={styles.listItem}>
-            <span>{task.text}</span>
-            <button style={styles.deleteButton} onClick={() => deleteTask(task._id)}>❌</button>
-          </li>
-        ))}
-      </ul>
+      <div style={styles.listBox}>
+        {tasks.length === 0 ? (
+          <p style={styles.noTask}>No tasks yet 😴</p>
+        ) : (
+          tasks.map((task) => (
+            <div key={task._id} style={styles.task}>
+              <span>{task.text}</span>
+              <button style={styles.deleteBtn} onClick={() => deleteTask(task._id)}>
+                ✖
+              </button>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
 
+// 🎨 Improved Modern UI
 const styles = {
-  container: {
-    maxWidth: "500px",
-    margin: "50px auto",
+  wrapper: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #89f7fe, #66a6ff)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "Poppins, sans-serif",
     padding: "20px",
-    borderRadius: "10px",
-    backgroundColor: "#f9f9f9",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-    textAlign: "center"
   },
-  title: {
-    color: "#333",
+  heading: {
+    color: "#fff",
+    fontSize: "2.2rem",
+    marginBottom: "20px",
   },
   inputBox: {
     display: "flex",
-    justifyContent: "center",
-    marginBottom: "20px"
+    gap: "10px",
+    width: "100%",
+    maxWidth: "400px",
+    marginBottom: "30px",
   },
   input: {
+    flex: 1,
     padding: "10px",
-    width: "70%",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-    marginRight: "10px"
+    borderRadius: "8px",
+    border: "none",
+    outline: "none",
+    fontSize: "1rem",
   },
-  addButton: {
+  addBtn: {
     padding: "10px 20px",
     backgroundColor: "#007bff",
     color: "white",
     border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    transition: "0.3s",
   },
-  list: {
-    listStyle: "none",
-    padding: 0
+  addBtnHover: {
+    backgroundColor: "#0056b3",
   },
-  listItem: {
+  listBox: {
+    width: "100%",
+    maxWidth: "400px",
+  },
+  task: {
+    backgroundColor: "white",
+    borderRadius: "8px",
+    padding: "10px 15px",
+    marginBottom: "10px",
     display: "flex",
     justifyContent: "space-between",
-    background: "#fff",
-    marginBottom: "10px",
-    padding: "10px 15px",
-    borderRadius: "5px",
-    border: "1px solid #eee"
+    alignItems: "center",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
   },
-  deleteButton: {
-    background: "red",
+  deleteBtn: {
+    backgroundColor: "#ff4d4d",
     color: "white",
     border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
-  }
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    cursor: "pointer",
+  },
+  noTask: {
+    color: "#fff",
+    fontSize: "1.2rem",
+  },
 };
 
 export default App;
