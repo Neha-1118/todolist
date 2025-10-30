@@ -9,23 +9,29 @@ const app = express();
 
 app.use(express.json());
 
-// ✅ Allow all origins (safe in dev, flexible for any frontend port)
+// ✅ CORS: allow React frontend (check your frontend port)
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: "http://localhost:3001", // ⚠️ change this if your React app runs on a different port (check terminal)
+    methods: ["GET", "POST", "DELETE"],
     allowedHeaders: ["Content-Type"],
   })
 );
 
+// ✅ Routes
 app.use("/api/todos", todoRoutes);
 
+const PORT = process.env.PORT || 5000;
+
+// ✅ MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB Error:", err));
 
-app.get("/", (req, res) => res.send("Server running..."));
+// ✅ Root check
+app.get("/", (req, res) => {
+  res.send("Server is running...");
+});
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
